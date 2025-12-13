@@ -1,16 +1,17 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || 'https://my-backend-pcyj.onrender.com/api';
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor to add auth token
+// Add auth token
 axiosClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -19,26 +20,18 @@ axiosClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle errors
+// Handle auth errors
 axiosClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid: remove token and notify the app
-      try {
-        localStorage.removeItem('token');
-        // Notify the app so the UI (redux/router) can handle logout centrally
-        window.dispatchEvent(new CustomEvent('app:unauthorized', { detail: { status: 401 } }));
-      } catch (e) {
-        // ignore
-      }
+      localStorage.removeItem('token');
+      window.dispatchEvent(
+        new CustomEvent('app:unauthorized', { detail: { status: 401 } })
+      );
     }
     return Promise.reject(error);
   }
