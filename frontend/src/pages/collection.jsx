@@ -23,6 +23,14 @@ const slugifyId = (value) => {
   const parsed = String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '') || 'x';
   return parsed;
 };
+const normalizeHandle = (value = '') => (
+  value
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+);
 
 const CollectionPage = () => {
   const { handle } = useParams();
