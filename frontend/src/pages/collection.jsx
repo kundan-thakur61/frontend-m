@@ -38,6 +38,8 @@ const CollectionPage = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
   const isAdmin = user?.role === 'admin';
+  const normalizedHandle = useMemo(() => normalizeHandle(handle), [handle]);
+  const fallbackCollection = useMemo(() => FALLBACK_COLLECTION_MAP[normalizedHandle] || null, [normalizedHandle]);
 
   const galleryRef = useRef(null);
   const [collection, setCollection] = useState(null);
@@ -60,27 +62,50 @@ const CollectionPage = () => {
 
   const loadCollection = useCallback(async () => {
     if (!handle) return;
-    setLoading(true);
-    setError('');
-    setNotFound(false);
+    const hasFallback = Boolean(fallbackCollection);
+
+    if (hasFallback) {
+      setCollection(fallbackCollection);
+      setNotFound(false);
+      setError('');
+      setLoading(false);
+    } else {
+      setCollection(null);
+      setLoading(true);
+      setError('');
+      setNotFound(false);
+    }
+
     try {
       const res = await collectionAPI.getByHandle(handle);
       const data = res.data?.data?.collection;
-      setCollection(data || null);
-      if (!data) {
+      if (data) {
+        setCollection(data);
+        setNotFound(false);
+        setError('');
+        return;
+      }
+      if (!hasFallback) {
         setNotFound(true);
       }
     } catch (err) {
       if (err.response?.status === 404) {
-        setCollection(null);
-        setNotFound(true);
+        if (!hasFallback) {
+          setCollection(null);
+          setNotFound(true);
+        }
       } else {
-        setError(err.response?.data?.message || err.message || 'Failed to load collection');
+        const message = err.response?.data?.message || err.message || 'Failed to load collection';
+        if (!hasFallback) {
+          setError(message);
+        }
       }
     } finally {
-      setLoading(false);
+      if (!hasFallback) {
+        setLoading(false);
+      }
     }
-  }, [handle]);
+  }, [handle, fallbackCollection]);
 
   useEffect(() => {
     loadCollection();
