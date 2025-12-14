@@ -1,28 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import ONE from '../assets/ONE.png';
-import TWO from '../assets/TWO.png';
-import THREE from '../assets/THREE.png';
-import FOUR from '../assets/FOUR.png';
-import FIVE from '../assets/FIVE.png';
-import SIX from '../assets/SIX.png';
-import SEVEN from '../assets/SEVEN.png';
 import collectionAPI from '../api/collectionAPI';
 import { resolveImageUrl } from '../utils/helpers';
-
-const fallbackTiles = [
-  { handle: '1', title: 'Dreamy Pastels', image: ONE },
-  { handle: '2', title: 'Custom Studio', image: TWO },
-  { handle: '3', title: 'Gilded Marble', image: THREE },
-  { handle: '4', title: 'Quotes Club', image: FOUR },
-  { handle: '5', title: 'Quotes Club', image: FIVE },
-  { handle: '6', title: 'Quotes Club', image: SIX },
-  { handle: '7', title: 'Quotes Club', image: SEVEN },
-];
+import { FALLBACK_COLLECTIONS } from '../data/fallbackCollections';
 
 const DEFAULT_ACCENT = '#0ea5e9';
 const DEFAULT_TAGLINE = 'Fresh drop';
-const IMAGE_ERROR_FALLBACK = ONE;
+const FALLBACK_CARDS = FALLBACK_COLLECTIONS.map((collection) => ({
+  id: collection._id,
+  handle: collection.handle,
+  title: collection.title,
+  image: resolveImageUrl(collection.heroImage || collection.images?.[0]?.url),
+  tagline: collection.tagline || DEFAULT_TAGLINE,
+  accent: collection.accentColor || DEFAULT_ACCENT,
+}));
+const IMAGE_ERROR_FALLBACK = FALLBACK_CARDS[0]?.image || '/frames/frame-1-fixed.svg';
 
 const Themes = () => {
   const [collections, setCollections] = useState([]);
@@ -55,25 +47,17 @@ const Themes = () => {
   const cards = (collections.length
     ? collections.map((item, idx) => {
         const hero = resolveImageUrl(item?.heroImage);
-        // Only use heroImage, not the uploaded collection images
-        const pick = hero || fallbackTiles[idx % fallbackTiles.length].image;
+        const fallback = FALLBACK_CARDS[idx % FALLBACK_CARDS.length];
         return {
           id: item._id || `${item.handle || `c-${idx}`}`,
-          handle: item.handle || item._id || `${idx}`,
-          title: item.title || 'Untitled',
-          image: pick,
-          accent: item.accentColor || DEFAULT_ACCENT,
-          tagline: item.tagline || DEFAULT_TAGLINE,
+          handle: item.handle || item._id || fallback?.handle || `${idx}`,
+          title: item.title || fallback?.title || 'Untitled',
+          image: hero || fallback?.image,
+          accent: item.accentColor || fallback?.accent || DEFAULT_ACCENT,
+          tagline: item.tagline || fallback?.tagline || DEFAULT_TAGLINE,
         };
       })
-    : fallbackTiles.map((item, index) => ({
-        id: item.handle,
-        handle: item.handle,
-        title: item.title,
-        image: item.image,
-        tagline: index % 2 === 0 ? 'Signature edit' : 'Custom drop',
-        accent: DEFAULT_ACCENT,
-      }))
+    : FALLBACK_CARDS
   );
 
   // Helper for img onError to show a safe fallback instead of broken image icon
@@ -96,7 +80,7 @@ const Themes = () => {
       <div className="bg-white/25 rounded-4xl p-4 backdrop-blur-sm">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {loading && collections.length === 0 ? (
-            fallbackTiles.map((tile) => (
+            FALLBACK_CARDS.map((tile) => (
               <div
                 key={tile.handle}
                 className="rounded-3xl h-64 bg-gray-200 animate-pulse"
