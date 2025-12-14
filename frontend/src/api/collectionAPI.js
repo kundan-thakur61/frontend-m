@@ -7,9 +7,7 @@ const collectionAPI = {
   adminCreate: (payload) => axiosClient.post('/admin/collections', payload),
   adminUpdate: (id, payload) => axiosClient.put(`/admin/collections/${id}`, payload),
   adminDelete: (id) => axiosClient.delete(`/admin/collections/${id}`),
-  adminAddImages: (id, formData) => axiosClient.post(`/admin/collections/${id}/images`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }),
+  adminAddImages: (id, formData) => axiosClient.post(`/admin/collections/${id}/images`, formData),
   adminRemoveImage: (id, imageId) => axiosClient.delete(`/admin/collections/${id}/images/${imageId}`),
 };
 
