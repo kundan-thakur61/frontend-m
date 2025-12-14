@@ -6,6 +6,7 @@ import { FiArrowLeft, FiCheckCircle, FiImage, FiSmartphone, FiTrash2, FiUpload }
 import collectionAPI from '../api/collectionAPI';
 import mobileAPI from '../api/mobileAPI';
 import { FALLBACK_MOBILE_COMPANIES } from '../data/fallbackMobileCompanies';
+import { FALLBACK_COLLECTION_MAP } from '../data/fallbackCollections';
 import { addToCart } from '../redux/slices/cartSlice';
 import { formatPrice, resolveImageUrl, SCREEN_RECT } from '../utils/helpers';
 
